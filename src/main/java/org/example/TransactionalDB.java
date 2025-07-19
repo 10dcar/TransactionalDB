@@ -18,7 +18,7 @@ public class TransactionalDB {
             HashMap<String, String> keyValue = this.operationsStack.pop();
             if(keyValue != null) {
                 for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-                    //set() repeated here
+                    //set() repeated here..
                     if(this.operationsStack.lastElement() != null) {
                         this.operationsStack.lastElement().put(entry.getKey(), entry.getValue());
                     } else {
