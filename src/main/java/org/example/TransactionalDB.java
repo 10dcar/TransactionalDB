@@ -2,19 +2,13 @@ package org.example;
 
 import java.util.*;
 
-interface DB {
-    public boolean begin();
-    public boolean commit();
-    public boolean rollback();
-    public String get(String key);
-    public boolean set(String key, String value);
-}
-
 public class TransactionalDB implements DB {
-    HashMap<String, String> db = new HashMap<>();
     Stack<HashMap<String, String>> operationsStack = new Stack<>();
-    HashMap<String, String> fastSearch = new HashMap<>();
+    HashMap<String, String> cache = new HashMap<>();
 
+    public TransactionalDB (){
+        this.begin();
+    }
     //Begins a transaction
     public boolean begin(){
         operationsStack.add(new HashMap<>());
@@ -24,36 +18,41 @@ public class TransactionalDB implements DB {
     //Commits everything that happened after the begin
     public boolean commit(){
         if(!operationsStack.isEmpty()) {
-            HashMap<String, String> keyValue = operationsStack.pop();
-            if(keyValue != null) {
-                for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-                    //Local class set() method
-                    this.set(entry.getKey(), entry.getValue());
-                }
-                return true;
+            for (Map.Entry<String, String> entry : operationsStack.pop().entrySet()) {
+                //Local class set() method
+                this.set(entry.getKey(), entry.getValue());
             }
+            return true;
         }
         return false;
     }
     //Removes everything after the begin
+    //ce putem face ca sa nu mai avem for in for?
+    //scopul primului for este sa treava prin toate cheile din varful stivei
+    //scopul celui de al doilea for este sa caute in toat stack cheia scoasa si sa o puna la loc in cache
+    //unul dintre ele trebuie eliminat
+    //de vazut programul cu stringuri si lamurit cazurile
     public boolean rollback(){
+        //parcurg stiva mai putin ultimul element
+        //bag tot ce gasesc in hashmap ul de index
+        //apoi parcurg tot cache ul si actualizez valorile cu cele din index
         if(!operationsStack.isEmpty()) {
-            HashMap<String, String> keyValue = this.operationsStack.pop();
-            if(keyValue != null) {
-                for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-                    fastSearch.remove(entry.getKey());
-                    //Search trough stack and db for the value interested
-                    boolean found = false;
-                    ListIterator<HashMap<String, String>> iterator = operationsStack.listIterator(operationsStack.size());
-                    while (iterator.hasPrevious()) {
-                        HashMap<String, String> entry_src = iterator.previous();
-                        if(entry_src != null && entry_src.containsKey(entry.getKey())) {
-                            found = true;
-                            fastSearch.put(entry.getKey(), entry_src.get(entry.getKey()));
-                        }
-                    }
-                    if(!found) {
-                        fastSearch.put(entry.getKey(), db.get(entry.getKey()));
+            //parcurge varful stivei care au fost sterse
+            for (Map.Entry<String, String> entry : operationsStack.pop().entrySet()) {
+                //doar daca am eliminat cheia tre sa o mai si adaug !!!
+                cache.remove(entry.getKey());
+                //atata timp cat parcurg elementele din stiva functionalitatea de stiva este tradata
+                //(teancul de farfurii) - obervatie importanta si tre agaugata in documentatie
+
+                //parcurge celelalte elemente ale stivei pentru a identifica valorile lor precedente cele mai recente
+                ListIterator<HashMap<String, String>> iterator = operationsStack.listIterator(operationsStack.size());
+                //parcurg toata stiva si bag intr un hashmap toate valorile gasite
+                //apoi parcurg tot cache ul si actualizez valorile cu cele din hashmap
+                while (iterator.hasPrevious()) {
+                    HashMap<String, String> entry_src = iterator.previous();
+                    if(entry_src != null && entry_src.containsKey(entry.getKey())) {
+                        cache.put(entry.getKey(), entry_src.get(entry.getKey()));
+                        break;
                     }
                 }
             }
@@ -63,20 +62,19 @@ public class TransactionalDB implements DB {
     }
     //Gets a value from the database. It can happen during a transaction or outside a transaction.
     public String get(String key){
-        String value = "";
-        value = fastSearch.get(key);
+        String value = cache.get(key);
+
         System.out.println("Get non-stack: {" + key + "=>" + value + "}");
         return value;
     }
     //Sets a value in the database. It can happen during a transaction or outside transaction.
-    public boolean set(String key, String value) {
-        fastSearch.put(key, value);
-        if(!operationsStack.isEmpty()){
-            operationsStack.lastElement().put(key, value);
-            return true;
-        } else {
-            db.put(key, value);
-            return true;
-        }
+    public void set(String key, String value) {
+        //in loc sa stocam dubluri perfecte am putea folosi pointeri
+        //dar in java toate lucrurile sunt pointeri si deci nu dubleaza memoria pentru stringurile value
+        //in java stringul are StringBuilder() rapid in concatenare
+        //si String() rapid in toate operatiile mai putin concatenare
+        cache.put(key, value);
+        operationsStack.lastElement().put(key, value);
     }
 }
+

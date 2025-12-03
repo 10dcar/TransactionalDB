@@ -1,4 +1,5 @@
 import org.example.TransactionalDB;
+import org.example.TransactionalDBListIndex;
 import org.junit.Test;
 
 /*
@@ -9,7 +10,8 @@ import static org.junit.Assert.assertNull;
 
 
 public class TestDB {
-    TransactionalDB db = new TransactionalDB();
+    //TransactionalDB db = new TransactionalDB();
+    TransactionalDBListIndex db = new TransactionalDBListIndex();
 
     private void valueCheck(String value) {
         db.set("a", value);           // Operation outside a transaction
@@ -145,4 +147,6 @@ public class TestDB {
         db.rollback();
         assertEquals("1 added should get 1", "1", db.get("c"));
     }
+
+    //de facut teste si pentru mai multe operatii doar in bd, fara tranzactii
 }
