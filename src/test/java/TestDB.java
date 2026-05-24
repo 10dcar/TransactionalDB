@@ -1,14 +1,19 @@
 import org.example.TransactionalDB;
+import org.example.TransactionalDBListIndex;
 import org.junit.Test;
 
+/*
+* de imfrumusetat codul din teste. Vom implementa 4 solutii de transactional db, insa testele raman acelasi pentru toate. Deci testele sunt de 4 ori mai importante decat codul.
+* */
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 
 public class TestDB {
-    TransactionalDB db = new TransactionalDB();
+    //TransactionalDB db = new TransactionalDB();
+    TransactionalDBListIndex db = new TransactionalDBListIndex();
 
-    private void valueCheck(String key, String value) {
+    private void valueCheck(String value) {
         db.set("a", value);           // Operation outside a transaction
         db.set("b", value);           // Operation outside a transaction
         db.set("c", value);           // Operation outside a transaction
@@ -16,14 +21,13 @@ public class TestDB {
         assertEquals("1 added should get "+value, value, db.get("a"));
         assertEquals("1 added should get "+value, value, db.get("b"));
         assertEquals("1 added should get "+value, value, db.get("c"));
-        System.out.println("");
     }
     //for value has to be value
     @Test
     public void testNonTransactionalSet() {
         System.out.println("testNonTransactionalSet");
         assertNull("nothing added should get nothing", db.get("a"));
-        this.valueCheck("", "1");
+        this.valueCheck("1");
     }
 
     //for value has to be value
@@ -31,92 +35,85 @@ public class TestDB {
     public void testTransactionalSet() {
         System.out.println("testTransactionalSet");
         db.begin();                 // Begin a transaction
-        this.valueCheck("", "2");
+        this.valueCheck("2");
     }
 
     @Test
     public void testTransactionInTransactionSet() {
         System.out.println("testTransactionInTransactionSet");
         db.begin();                 // Begin a transaction
-        this.valueCheck("", "2");
+        this.valueCheck("2");
 
         db.begin();
         db.set("c", "3");           // Operation within a nested transaction
-
         assertEquals("2 added should get 2", "2", db.get("a"));
         assertEquals("2 added should get 2", "2", db.get("b"));
         assertEquals("2 added should get 2", "3", db.get("c"));
-        System.out.println("");
     }
 
     @Test
     public void testTransactionInTransactionSetWithCommit() {
         System.out.println("testTransactionInTransactionSetWithCommit");
         db.begin();                 // Begin a transaction
-        this.valueCheck("", "2");
+        this.valueCheck("2");
 
         db.begin();
         db.set("c", "3");           // Operation within a nested transaction
-
         assertEquals("2 added should get 2", "2", db.get("a"));
         assertEquals("2 added should get 2", "2", db.get("b"));
         assertEquals("2 added should get 3", "3", db.get("c"));
-        System.out.println("");
+
         db.commit();
         assertEquals("2 added should get 2", "2", db.get("a"));
         assertEquals("2 added should get 2", "2", db.get("b"));
         assertEquals("2 added should get 3", "3", db.get("c"));
-        System.out.println("");
     }
 
     @Test
     public void testTransactionInTransactionSetWithCommitAndRollback() {
         System.out.println("testTransactionInTransactionSetWithCommitAndRollback");
         db.begin();                 // Begin a transaction
-        this.valueCheck("", "2");
+        this.valueCheck("2");
 
         db.begin();
         db.set("c", "3");           // Operation within a nested transaction
-
         assertEquals("2 added should get 2", "2", db.get("a"));
         assertEquals("2 added should get 2", "2", db.get("b"));
         assertEquals("2 added should get 2", "3", db.get("c"));
-        System.out.println("");
+
         db.commit();
         assertEquals("2 added should get 2", "2", db.get("a"));
         assertEquals("2 added should get 2", "2", db.get("b"));
         assertEquals("2 added should get 2", "3", db.get("c"));
-        System.out.println("");
+
         db.rollback();
         assertNull("2 added should get 2", db.get("a"));
         assertNull("2 added should get 2", db.get("b"));
         assertNull("2 added should get 2", db.get("c"));
-        System.out.println("");
     }
+
     @Test
     public void testTransactionInTransactionSetWithCommitAndRollbackOutsideTransaction() {
         System.out.println("testTransactionInTransactionSetWithCommitAndRollbackOutsideTransaction");
-        this.valueCheck("", "1");
+        this.valueCheck("1");
         db.begin();                 // Begin a transaction
-        this.valueCheck("", "2");
+        this.valueCheck("2");
 
         db.begin();
         db.set("c", "3");           // Operation within a nested transaction
-
         assertEquals("2 added should get 2", "2", db.get("a"));
         assertEquals("2 added should get 2", "2", db.get("b"));
         assertEquals("2 added should get 2", "3", db.get("c"));
-        System.out.println("");
+
         db.commit();
         assertEquals("2 added should get 2", "2", db.get("a"));
         assertEquals("2 added should get 2", "2", db.get("b"));
         assertEquals("2 added should get 2", "3", db.get("c"));
-        System.out.println("");
+
         db.rollback();
         assertEquals("2 added should get 2", "1", db.get("a"));
         assertEquals("2 added should get 2", "1", db.get("b"));
         assertEquals("2 added should get 2", "1", db.get("c"));
-        System.out.println("");
     }
 
     @Test
@@ -125,9 +122,9 @@ public class TestDB {
         db.begin();
         db.set("c", "1");           // Operation within a nested transaction
         assertEquals("1 added should get 1", "1", db.get("c"));
+
         db.begin();
         db.set("c", "3");           // Operation within a nested transaction
-
         assertEquals("3 added should get 3", "3", db.get("c"));
 
         db.commit();
@@ -145,10 +142,29 @@ public class TestDB {
         db.set("c", "1");           // Operation within a nested transaction
         db.begin();
         db.set("c", "3");           // Operation within a nested transaction
-
         assertEquals("3 added should get 3", "3", db.get("c"));
 
         db.rollback();
         assertEquals("1 added should get 1", "1", db.get("c"));
     }
+
+    //de facut teste si pentru mai multe operatii doar in bd, fara tranzactii
+
+    //sa scriu toate testele aici, sa inteleg daca i a scapat ceva
+    //teste unitare si teste de integrare
+    //folosesc o aplicatie de java care sa spuna daca coverage ul este 100% sau nu, sa vad daca am acoperit toate cazurile
+
 }
+
+//1 set() - foloseste o cheie care nu exista si o cheie care exista
+//2 get() - foloseste o cheie care nu exista si o cheie care exista
+//3 commit(), rollback() cu sau fara begin
+//4 commit(), rollback() cu begin() dar niciun element bagat sau cu elemente bagate
+//5 commit(), rollback() fara begin() dar niciun element bagat sau cu elemente bagate
+//6 rollback() si apoi commit() si apoi ca deasupra
+
+//A) teste unitare (testeaza o singura metoda) - vei testa fiecare metoda in parte in mod izolat
+
+//B) teste de coverage - te uiti pe toate liniile de cod si vezi daca testele tale au trecut prin toate liniile de cod (eroare "unreachable code"): test care se duce si pe if() si pe else si se vrea coveage 100%
+
+//C) teste de integrare - pun mai multe metode testate cu teste unitare cap la cap (A()->B() si alta ordine)
