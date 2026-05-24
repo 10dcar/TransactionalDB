@@ -74,8 +74,8 @@ public class TransactionalDBListIndex {
     public boolean rollback(){
         //tin un index pentru stack in care spun in ce hasmap al stackului gasesc ultima sau penultima valoare a unei chei
 
-        //DECI CE FAC: IAU ULTIMUL HASH MAP DIN OPERATIONS LIST SI IL PARCURG
-        //ELIMIN TOATE PRIMELE ELEMENTE DIN STACKURILE DE INDEX CARE SUNT PENTRU CHEILE DIN HASH MAPUL ULTIMULUI ELEMENT DIN OPERATIONS LIST
+        //DECI CE FAC: IAU ULTIMUL HASH MAP DIN OPERATIONSLIST SI IL PARCURG
+        //ELIMIN TOATE PRIMELE ELEMENTE DIN STACKURILE DE INDEX CARE SUNT PENTRU CHEILE DIN HASH MAPUL ULTIMULUI ELEMENT DIN OPERATIONSLIST
         //APOI SCOT DIN INDEX UNDE SUNT IN OPERATIONS LIST URMATOARELE VALORI SI PUN VALORILE IN CACHE
         //OR acc to CLAUDE
         /*
@@ -117,7 +117,7 @@ public class TransactionalDBListIndex {
                 //SELECTEZ ACEL OPERATIONS LIST SI IAU HASH MAPUL DE LA EL ACOLO IN ACEL HASHMAP CAUT VALOAREA
                 //O IAU SI O PUN IN CACHE
                 //try
-                if(stackEntry.isEmpty()) {
+                if(!stackEntry.isEmpty()) {
                     cache.put(operationsKeyForTransaction, operationsList.get(stackEntry.peek()).get(operationsKeyForTransaction));
                 } else {
                 //catch (EmptyStackException e) {

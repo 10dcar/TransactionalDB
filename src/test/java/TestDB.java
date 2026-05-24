@@ -149,4 +149,22 @@ public class TestDB {
     }
 
     //de facut teste si pentru mai multe operatii doar in bd, fara tranzactii
+
+    //sa scriu toate testele aici, sa inteleg daca i a scapat ceva
+    //teste unitare si teste de integrare
+    //folosesc o aplicatie de java care sa spuna daca coverage ul este 100% sau nu, sa vad daca am acoperit toate cazurile
+
 }
+
+//1 set() - foloseste o cheie care nu exista si o cheie care exista
+//2 get() - foloseste o cheie care nu exista si o cheie care exista
+//3 commit(), rollback() cu sau fara begin
+//4 commit(), rollback() cu begin() dar niciun element bagat sau cu elemente bagate
+//5 commit(), rollback() fara begin() dar niciun element bagat sau cu elemente bagate
+//6 rollback() si apoi commit() si apoi ca deasupra
+
+//A) teste unitare (testeaza o singura metoda) - vei testa fiecare metoda in parte in mod izolat
+
+//B) teste de coverage - te uiti pe toate liniile de cod si vezi daca testele tale au trecut prin toate liniile de cod (eroare "unreachable code"): test care se duce si pe if() si pe else si se vrea coveage 100%
+
+//C) teste de integrare - pun mai multe metode testate cu teste unitare cap la cap (A()->B() si alta ordine)
